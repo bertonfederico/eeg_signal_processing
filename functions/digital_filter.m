@@ -19,10 +19,7 @@ function [] = digital_filter(EEG_data, fc)
     delta = 10^(-A_stop / 20);
     [n, Wn, beta, filtype] = kaiserord([F1 F2 F3 F4], [0 1 0], [delta delta delta], fc);
     fir_filter = fir1(n, Wn, filtype, kaiser(n+1, beta));
-
-    % Filtering dataset in normal mode
     bandpass_filtered_eeg = filter(fir_filter, 1, EEG_data);
-    [gd_bandpass, gd_window_bandpass] = grpdelay(fir_filter, 1, 512, fc);
 
 
 
@@ -42,7 +39,6 @@ function [] = digital_filter(EEG_data, fc)
     a_notch = [1 a1 a2];
     b_notch = [1 b1 b2];
     notch_filtered_eeg = filter(b_notch, a_notch, EEG_data);
-    [gd_notch, gd_window_notch] = grpdelay(b_notch, a_notch, 512, fc);
 
 
 
@@ -83,6 +79,32 @@ function [] = digital_filter(EEG_data, fc)
     xlabel('Time (s)');
     ylabel('Amplitude (µV)');
     ylim([-300 300]);
+
+
+
+
+
+    % *************************************************************************
+    % ****************************** Group delay ******************************
+    % *************************************************************************
+    figure;
+    [gd_bandpass, gd_window_bandpass] = grpdelay(fir_filter, 1, 512, fc);
+    subplot(2, 1, 1);
+    time_gd_bandpass = gd_bandpass / fc;
+    plot(gd_window_bandpass, time_gd_bandpass);
+    xlabel('Frequency (Hz)');
+    ylabel('Group delay (seconds)');
+    title('Group delay - Kaiser FIR windows');
+    grid on;
+    [gd_notch, gd_window_notch] = grpdelay(b_notch, a_notch, 512, fc);
+    subplot(2, 1, 2);
+    time_gd_notch = gd_notch / fc;
+    plot(gd_window_notch, time_gd_notch);
+    xlabel('Frequency (Hz)');
+    ylabel('Group delay (seconds)');
+    title('Group delay - notch filter');
+    grid on;
+
 
 
 
@@ -139,28 +161,6 @@ function [] = digital_filter(EEG_data, fc)
     title('Spectrogram without artifact - bandpass + notch filter');
     xlabel('Frequency');
     ylabel('Magnitudine');
-
-
-
-
-
-    % *************************************************************************
-    % ****************************** Group delay ******************************
-    % *************************************************************************
-    figure;
-    subplot(2, 1, 1);
-    plot(gd_window_bandpass, gd_bandpass);
-    xlabel('Frequency (Hz)');
-    ylabel('Group delay');
-    title('Group delay - Kaiser FIR windows');
-    grid on;
-
-    subplot(2, 1, 2);
-    plot(gd_window_notch, gd_notch);
-    xlabel('Frequency (Hz)');
-    ylabel('Group delay');
-    title('Group delay - notch filter');
-    grid on;
 
 
 end
