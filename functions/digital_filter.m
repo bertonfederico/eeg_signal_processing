@@ -1,4 +1,4 @@
-function [] = digital_filter(EEG_data, fc)
+function [] = digital_filter(EEG_data, fc, notch_R, show_graph, filtfilt_use)
 
 
     N = length(EEG_data);
@@ -19,7 +19,11 @@ function [] = digital_filter(EEG_data, fc)
     delta = 10^(-A_stop / 20);
     [n, Wn, beta, filtype] = kaiserord([F1 F2 F3 F4], [0 1 0], [delta delta delta], fc);
     fir_filter = fir1(n, Wn, filtype, kaiser(n+1, beta));
-    bandpass_filtered_eeg = filter(fir_filter, 1, EEG_data);
+    if filtfilt_use == 1
+        bandpass_filtered_eeg = filtfilt(fir_filter, 1, EEG_data);
+    else
+        bandpass_filtered_eeg = filter(fir_filter, 1, EEG_data);
+    end
 
 
 
@@ -28,17 +32,19 @@ function [] = digital_filter(EEG_data, fc)
     % *************************************************************************
     % ****************************** Notch filter *****************************
     % *************************************************************************
-    f0 = 50;
-    w0 = (2 * pi * f0) / fc;
-    r = 1;
-    R = 0.60;
-    a1 = -2 * R * cos(w0);
-    a2 = R^2;
-    b1 = -2 * r * cos(w0);
-    b2 = r^2;
-    a_notch = [1 a1 a2];
-    b_notch = [1 b1 b2];
-    notch_filtered_eeg = filter(b_notch, a_notch, EEG_data);
+    if ne(notch_R,  0)
+        f0 = 50;
+        w0 = (2 * pi * f0) / fc;
+        r = 1;
+        R = notch_R;
+        a1 = -2 * R * cos(w0);
+        a2 = R^2;
+        b1 = -2 * r * cos(w0);
+        b2 = r^2;
+        a_notch = [1 a1 a2];
+        b_notch = [1 b1 b2];
+        notch_filtered_eeg = filter(b_notch, a_notch, EEG_data);
+    end
 
 
 
@@ -47,12 +53,19 @@ function [] = digital_filter(EEG_data, fc)
     % *************************************************************************
     % ************************ Bandpass + notch filter ************************
     % *************************************************************************
-    bandpass_notch_filtered_eeg = filter(b_notch, a_notch, bandpass_filtered_eeg);
+    if ne(notch_R, 0)
+        total_filtered = filter(b_notch, a_notch, bandpass_filtered_eeg);
+    else
+        total_filtered = bandpass_filtered_eeg;
+    end
+    
 
 
 
 
-
+    if show_graph == 0
+        return
+    end
     % *************************************************************************
     % ***************************** Signal graphs *****************************
     % *************************************************************************
@@ -68,13 +81,15 @@ function [] = digital_filter(EEG_data, fc)
     xlabel('Time (s)');
     ylabel('Amplitude (µV)');
     ylim([-300 300]);
-    subplot(2, 2, 3);
-    plot(time, notch_filtered_eeg);
-    title('Notch filtered signal');
-    xlabel('Time (s)');
-    ylabel('Amplitude (µV)');
+    if ne(notch_R,  0)
+        subplot(2, 2, 3);
+        plot(time, notch_filtered_eeg);
+        title('Notch filtered signal');
+        xlabel('Time (s)');
+        ylabel('Amplitude (µV)');
+    end
     subplot(2, 2, 4);
-    plot(time, bandpass_notch_filtered_eeg);
+    plot(time, total_filtered);
     title('Bandpass + notch signal');
     xlabel('Time (s)');
     ylabel('Amplitude (µV)');
@@ -96,14 +111,16 @@ function [] = digital_filter(EEG_data, fc)
     ylabel('Group delay (seconds)');
     title('Group delay - Kaiser FIR windows');
     grid on;
-    [gd_notch, gd_window_notch] = grpdelay(b_notch, a_notch, 512, fc);
-    subplot(2, 1, 2);
-    time_gd_notch = gd_notch / fc;
-    plot(gd_window_notch, time_gd_notch);
-    xlabel('Frequency (Hz)');
-    ylabel('Group delay (seconds)');
-    title('Group delay - notch filter');
-    grid on;
+    if ne(notch_R,  0)
+        subplot(2, 1, 2);
+        [gd_notch, gd_window_notch] = grpdelay(b_notch, a_notch, 512, fc);
+        time_gd_notch = gd_notch / fc;
+        plot(gd_window_notch, time_gd_notch);
+        xlabel('Frequency (Hz)');
+        ylabel('Group delay (seconds)');
+        title('Group delay - notch filter');
+        grid on;
+    end
 
 
 
@@ -115,16 +132,18 @@ function [] = digital_filter(EEG_data, fc)
     figure;
     Nint = 64;
     subplot(2, 2, 1);
-    pdf_estim(EEG_data(:, 1), Nint, 1);
+    pdf_estim(EEG_data', Nint, 1);
     title('Probability density with artifact');
     subplot(2, 2, 2);
-    pdf_estim(bandpass_filtered_eeg(:, 1), Nint, 1);
+    pdf_estim(bandpass_filtered_eeg', Nint, 1);
     title('Probability density - bandpass filter');
-    subplot(2, 2, 3);
-    pdf_estim(notch_filtered_eeg(:, 1), Nint, 1);
-    title('Probability density - notch filter');
+    if ne(notch_R,  0)
+        subplot(2, 2, 3);
+        pdf_estim(notch_filtered_eeg', Nint, 1);
+        title('Probability density - notch filter');
+    end
     subplot(2, 2, 4);
-    pdf_estim(bandpass_notch_filtered_eeg(:, 1), Nint, 1);
+    pdf_estim(total_filtered', Nint, 1);
     title('Probability density - bandpass + notch filter');
 
 
@@ -149,14 +168,16 @@ function [] = digital_filter(EEG_data, fc)
     title('Spectrogram without artifact - bandpass');
     xlabel('Frequency');
     ylabel('Magnitudine');
-    subplot(2, 2, 3);
-    [S, F, ~] = spectrogram(notch_filtered_eeg, n_cb, 0, n_fft, fc);
-    plot(F, 20*log10(mean(abs(S'))), 'r');
-    title('Spectrogram without artifact - notch filter');
-    xlabel('Frequency');
-    ylabel('Magnitudine');
+    if ne(notch_R,  0)
+        subplot(2, 2, 3);
+        [S, F, ~] = spectrogram(notch_filtered_eeg, n_cb, 0, n_fft, fc);
+        plot(F, 20*log10(mean(abs(S'))), 'r');
+        title('Spectrogram without artifact - notch filter');
+        xlabel('Frequency');
+        ylabel('Magnitudine');
+    end
     subplot(2, 2, 4);
-    [S, F, ~] = spectrogram(bandpass_notch_filtered_eeg, n_cb, 0, n_fft, fc);
+    [S, F, ~] = spectrogram(total_filtered, n_cb, 0, n_fft, fc);
     plot(F, 20*log10(mean(abs(S'))), 'r');
     title('Spectrogram without artifact - bandpass + notch filter');
     xlabel('Frequency');
