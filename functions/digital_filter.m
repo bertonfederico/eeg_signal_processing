@@ -1,4 +1,4 @@
-function [] = digital_filter(EEG_data, fc, notch_R, show_graph, filtfilt_use)
+function [total_filtered] = digital_filter(EEG_data, fc, notch_R, show_graph, filtfilt_use)
 
 
     N = length(EEG_data);
