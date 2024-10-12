@@ -1,4 +1,4 @@
-function [xi, pdf_x, mean_x, square_x, variance_x] = pdf_estim(x, Nint, Graph)
+function [xi, pdf_x, mean_x, square_x, variance_x, cdf] = pdf_estim(x, Nint, Graph)
 
 
     % pdf_estim 
@@ -23,6 +23,7 @@ function [xi, pdf_x, mean_x, square_x, variance_x] = pdf_estim(x, Nint, Graph)
     DELTA = (max(x) - min(x)) / Nint;
     [Ci, xi] = hist(x, Nint);
     pdf_x = (Ci / L) / DELTA;
+    cdf = cumsum(Ci / L);
 
     if Graph == 1
         bar(xi, pdf_x)
