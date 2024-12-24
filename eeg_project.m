@@ -25,7 +25,7 @@ pause
 % *************************************************************************
 %% Spectral estimation
 fs_original = 5000;
-loadedData = load('eeg_dataset\spectral_estimation\filtered_EEG_data.mat');
+loadedData = load('eeg_dataset\psd\filtered_EEG_data.mat');
 dataBuffer = loadedData.filteredEEG_data;
 max_lag = 15000;
 spectral_estimation(dataBuffer, fs_original, max_lag);
