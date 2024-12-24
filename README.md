@@ -1,4 +1,12 @@
-# Digital Signal processing per EEG
+# Digital Signal Processing per EEG
+
+L'obiettivo di questo progetto è studiare il digital signal processing applicato ai segnali EEG (elettroencefalografici), con particolare attenzione alle tecniche fondamentali per la loro analisi e trasformazione.
+
+In primo luogo, viene affrontato il problema della filtrazione del segnale, con l'obiettivo di rimuovere l'interferenza di rete e altri artefatti indesiderati che possono compromettere la qualità del segnale.
+
+Successivamente, si procede con lo studio delle proprietà statistiche del segnale EEG, valutandone la stazionarietà e l'ergodicità. Poiché il segnale EEG varia nel tempo e non è generalmente stazionario o ergodico, viene utilizzata la densità spettrale di potenza (PSD) come strumento analitico, calcolata tramite lo spettrogramma. Questo approccio consente di analizzare come l'energia del segnale si distribuisca nelle diverse frequenze nel dominio temporale.
+
+Una volta caratterizzate le proprietà del segnale, si passa alla sua digitalizzazione, un passo cruciale nel DSP. Il segnale EEG viene inizialmente campionato, avendo una frequenza elevata (oversampled) di circa 5000 campioni al secondo. Infine, viene studiata la quantizzazione del segnale, che rappresenta la fase finale della digitalizzazione. Due metodi di quantizzazione vengono analizzati e confrontati: la quantizzazione uniforme, che utilizza una suddivisione equidistante del dominio dei valori del segnale, e una quantizzazione ottima, progettata per minimizzare l'errore di quantizzazione e ridurre il numero di bit necessari per la rappresentazione del segnale.
 
 ## Filtraggio dei segnali
 
@@ -126,3 +134,31 @@ Le frequenze tipiche nell'EEG variano da 0,5-4 Hz (onde delta) a 30-100 Hz (onde
 
 
 ## Quantizzazione
+Nell'ambito dell'analisi del segnale EEG, dopo aver esaminato i grafici della Funzione di Densità di Probabilità (PDF) e della Funzione di Distribuzione Cumulativa (CDF), si osserva che la PDF del dataset in esame presenta una forma prossima alla distribuzione gaussiana, centrata intorno allo zero. Questo andamento riflette la natura prevalentemente simmetrica e a bassa ampiezza dei segnali EEG, ma è interessante notare che la distribuzione si estende fino a 1000 µV, includendo anche le oscillazioni più intense associate a fenomeni come l'epilessia. Tali caratteristiche del segnale devono essere prese in considerazione nel processo di quantizzazione, al fine di preservare l'integrità del dato e ridurre al contempo la quantità di bit necessari per rappresentarlo.
+![alt text](images/sampling_quantization/1.png)
+
+Il processo di quantizzazione è stato inizialmente eseguito in maniera uniforme, applicando una divisione regolare dell'intervallo di valori del segnale in un numero predefinito di livelli discreti.
+
+Per ottimizzare l'uso della memoria e minimizzare il numero di bit necessari per la rappresentazione digitale del segnale, è stata quindi applicatala quantizzazione ottima non uniforme. Questa tecnica si basa sull'adozione di una suddivisione dei livelli di quantizzazione che varia in funzione della densità di probabilità del segnale stesso. In altre parole, i livelli di quantizzazione vengono concentrati nelle aree di maggiore probabilità, tipicamente quelle vicine allo zero, mentre nelle aree con distribuzione più sparsa (come i picchi dei segnali epilettici), si utilizzano livelli più distanziati. 
+
+### Quantizzazione uniforme
+In un sistema di quantizzazione uniforme, l'intervallo di valori del segnale continuo viene suddiviso in livelli discreti uniformemente distribuiti. Il numero totale di livelli disponibili in questo caso è determinato dalla quantità di bit utilizzati per la rappresentazione, che nel nostro caso è di 12 bit. Di questi, 1 bit è riservato per rappresentare la parte frazionaria del numero (cioè, per rappresentare le frazioni di un livello discreto), mentre i rimanenti 11 bit sono utilizzati per rappresentare i valori interi del segnale.
+
+Una volta eseguita la quantizzazione uniforme a 12 bit, è fondamentale valutare le prestazioni del sistema attraverso alcuni parametri chiave, come il range dinamico e il rapporto segnale/rumore di quantizzazione (SQNR).
+
+Il range dinamico è un indicatore della capacità del sistema di rappresentare l'ampiezza del segnale. Esso esprime il rapporto tra la lunghezza dell'intervallo di valori rappresentabili e la risoluzione del sistema, cioè il passo frazionato. Nel nostro caso, l'intervallo rappresentabile è determinato dalla variabilità dei valori tra il minimo e il massimo rappresentabili (`mfp_target` e `Mfp_target`), e la risoluzione è definita dal passo frazionato (`Nfp_target`). La formula per il calcolo del range dinamico in decibel è la seguente:
+
+$$
+DR_{\text{db}} = 20 \cdot \log_{10}\left(\frac{R}{Nfp_{\text{target}}}\right)
+$$
+
+dove $R = 2 \cdot |mfp_{\text{target}}|$ rappresenta la lunghezza dell'intervallo rappresentabile, mentre $Nfp_{\text{target}}$ è la risoluzione frazionaria.
+
+Un altro parametro importante è il rapporto segnale/rumore di quantizzazione (SQNR). Questo indicatore misura l'efficacia con cui il sistema quantizza il segnale, confrontando la potenza del segnale quantizzato con la potenza dell'errore introdotto dalla quantizzazione. Il valore del SQNR è dato dalla formula:
+
+$$
+SQNR = 10 \cdot \log_{10}\left(\frac{P_{\text{segnale}}}{P_{\text{errore}}}\right)
+$$
+
+dove $P_{\text{segnale}}$ è la potenza del segnale quantizzato e $P_{\text{errore}}$ è la potenza dell'errore di quantizzazione. Un valore più alto di SQNR implica una minore distorsione nel segnale causata dall'errore di quantizzazione.
+![alt text](images/sampling_quantization/2.png)

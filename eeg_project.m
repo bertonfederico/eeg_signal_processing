@@ -40,6 +40,8 @@ pause
 % *************************************************************************
 %% Sampling
 fs_new = 500;
+loadedData = load('eeg_dataset\quantization\joined.mat');
+dataBuffer = loadedData.data_cleaned;
 EEG_data_downsampled = sampling(dataBuffer, fs_original, fs_new);
 
 % Quantization

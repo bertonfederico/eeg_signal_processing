@@ -1,4 +1,4 @@
-function [] = quantization(EEG_data)
+function [] = quantization(aggregated_data)
 
 
 
@@ -21,44 +21,7 @@ function [] = quantization(EEG_data)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Signals study %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %% Showing samples
-
-    figure()
-    for index = 1 : 6
-        signal = EEG_data(index, :);
-        signal = digital_filter(signal, 500, 0, 0);
-        subplot(2, 3, index);
-        plot(signal);
-        grid
-        title("Signal " + index);
-        ylabel("Amplitude (µV)");
-        xlabel("Sample");
-    end
-    sgtitle('Signal examples');
-
-
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %% Joining samples
-
-    aggregated_data = EEG_data';
-    aggregated_data = aggregated_data(:);
-    aggregated_data = aggregated_data';
-    aggregated_data = aggregated_data(aggregated_data < 1024 & aggregated_data >= -1024);
-
-
-
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %% Aggregated PDF and CDF
-    
     figure();
     sgtitle("Aggregated data PDF (Gaussian-like)");
     subplot(1, 2, 1);
@@ -165,13 +128,13 @@ function [] = quantization(EEG_data)
     %% Target and LUT avaiable bits
 
     % Target bits
-    B_target = 10;
-    B_sign = 1;
-    B_frac_target = 2;
+    B_target = 10;                                                  % total number of bits
+    B_sign = 1;                                                     % bits for sign
+    B_frac_target = 2;                                              % bits for fractionary part
     B_int_target = B_target - B_frac_target - B_sign;
-    Nfp_target = 2^(-B_frac_target);
-    Mfp_target = Nfp_target * (2^(B_target - 1) - 1);
-    mfp_target = -(Nfp_target + Mfp_target);
+    Nfp_target = 2^(-B_frac_target);                                % range between representable numbers
+    Mfp_target = Nfp_target * (2^(B_target - 1) - 1);               % max number representable: 1 removed for sign, 1 removed for zero
+    mfp_target = -(Nfp_target + Mfp_target);                        % min number representable
 
     % LUT bits values
     B_starting = 14;
@@ -268,7 +231,7 @@ function [] = quantization(EEG_data)
     subplot(2, 2, 2);
     pdf_estim(compressed_data, 51, 1);
     title("Compressed signal PDF - non-linear part");
-    xlabel("Compressed signal amplitude (µV)");
+    xlabel("Compressed signal amplitude");
     ylabel("Probability");
     subplot(2, 2, 4);
     bef_afte_diff = testing_data - decompressed_data;
