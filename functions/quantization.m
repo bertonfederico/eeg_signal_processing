@@ -32,7 +32,7 @@ function [] = quantization(EEG_data)
     figure()
     for index = 1 : 6
         signal = EEG_data(index, :);
-        signal = digital_filter(signal, 500, 0, 0, 1);
+        signal = digital_filter(signal, 500, 0, 0);
         subplot(2, 3, index);
         plot(signal);
         grid
