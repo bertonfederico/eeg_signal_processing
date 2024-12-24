@@ -84,9 +84,11 @@ L'analisi della densità spettrale di potenza è uno strumento fondamentale per 
 Per un segnale non stazionario, si assume che il segnale possa essere considerato stazionario a tratti (approssimativamente stazionario all'interno di finestre temporali). La densità spettrale di potenza è calcolata all'interno di ciascuna finestra tramite la trasformata discreta di Fourier (DFT).
 
 La PSD è definita come:
+
 $$
 P_x(f) = \lim_{T \to \infty} \frac{1}{T} \left| X(f) \right|^2
 $$
+
 dove $X(f)$ è la trasformata di Fourier del segnale $x(t)$ in una finestra temporale di durata $T$.
 
 Nel caso di segnali EEG, non stazionari per definizione, si utilizza la spettrogramma, che suddivide il segnale in finestre di durata $T_{\text{staz}}$. Per ogni finestra, si calcola la trasformata di Fourier e la PSD.
@@ -94,6 +96,7 @@ Nel caso di segnali EEG, non stazionari per definizione, si utilizza la spettrog
 La scelta di $T_{\text{staz}}$ rappresenta un compromesso tra:
 1. **Risoluzione temporale**: una finestra temporale più breve permette di rilevare variazioni rapide nel tempo, migliorando la precisione temporale.
 2. **Risoluzione frequenziale**: una finestra temporale più lunga consente una maggiore precisione nella frequenza, poiché la risoluzione frequenziale è inversamente proporzionale alla lunghezza della finestra:
+
 $$
 \Delta f = \frac{1}{T_{\text{staz}}}
 $$
@@ -109,3 +112,17 @@ Nel contesto dei segnali EEG analizzati, $T_{\text{staz}} = 1$ secondo si è riv
 - Finestre di 5 o 10 secondi forniscono una risoluzione frequenziale elevata, ma non riescono a catturare variazioni rapide come quelle che si verificano durante eventi epilettici o transitori.
 - Con $T_{\text{staz}} = 1$ secondo, si ottiene un bilanciamento precisione e risoluzione.
 ![alt text](images/spectral_estimation/5.png)
+
+
+## Campionamento
+Nel contesto dell'acquisizione dei segnali EEG, i dati originali, campionati a **5000 campioni al secondo**, sono stati successivamente ridotti a **500 campioni al secondo**. Tale riduzione è valida, in accordo con il teorema di Nyquist-Shannon, che stabilisce che la frequenza di campionamento deve essere almeno il doppio della frequenza massima del segnale per evitarne l'aliasing. Se la frequenza massima del segnale EEG non supera i **250 Hz**, la riduzione della frequenza di campionamento non comporta alcuna perdita di informazione.
+
+$$
+f_s \geq 2 f_{\text{max}}
+$$
+
+Le frequenze tipiche nell'EEG variano da 0,5-4 Hz (onde delta) a 30-100 Hz (onde gamma), con frequenze intermedie come 4-8 Hz (onde theta), 8-13 Hz (onde alfa) e 13-30 Hz (onde beta). Poiché la componente più alta di frequenza del segnale EEG solitamente non supera i 250 Hz, campionare a 500 Hz è sufficiente per catturare tutte le informazioni rilevanti, rispettando il principio di Nyquist.
+![alt text](images/sampling_quantization/0.png)
+
+
+## Quantizzazione
