@@ -132,8 +132,8 @@ function [] = quantization(aggregated_data)
     B_int_target = B_target - B_sign;                               % bits for integer
 
     % LUT bits
-    B_starting = 14;                                                % total number of bits
-    B_frac_starting = 3;                                            % fractional bits
+    B_starting = 16;                                                % total number of bits
+    B_frac_starting = 5;                                            % fractional bits
     Nfp_starting = 2^(-B_frac_starting);                            % range between representable numbers
 
     % Initial quantization of data to limit lookup table length
@@ -146,8 +146,8 @@ function [] = quantization(aggregated_data)
     %% Splitting unlikely data and likely data, since probability of |mod| > 123 is low
     max_value = 2^(B_starting - 1 - B_frac_starting) - 1;     %  1023
     min_value = - 2^(B_starting - 1 - B_frac_starting);       % -1024
-    positive_separator_value = 123;
-    negative_separator_value = -124;
+    positive_separator_value = 223;
+    negative_separator_value = -224;
     likely_data = aggregated_data_lut(aggregated_data_lut <= positive_separator_value & aggregated_data_lut >= negative_separator_value);
 
 
@@ -170,8 +170,8 @@ function [] = quantization(aggregated_data)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% Managing likely data with optimal quantization
-    [~,  ~, ~, ~, ~, cdf_x] = pdf_estim(likely_data, 2^B_starting-2*LUT_unlikely_semi_dim, 0);         % CDF for likely data
-    gx_likely = cdf_x * (LUT_min_positive_limit - LUT_max_negative_limit) + LUT_max_negative_limit;    % CDF scaling and shifting
+    [~,  ~, ~, ~, ~, cdf_x] = pdf_estim(likely_data, 2^B_starting-2*LUT_unlikely_semi_dim, 0);             % CDF for likely data
+    gx_likely = cdf_x * (LUT_min_positive_limit - LUT_max_negative_limit - 1) + LUT_max_negative_limit;    % CDF scaling and shifting
 
 
 
@@ -179,7 +179,7 @@ function [] = quantization(aggregated_data)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% Mixing and quantizing likely and unlikely data
     gx = [LUT_unlikely_negative_linspace gx_likely LUT_unlikely_positive_linspace];
-    gx_quantized = ceil(gx);                                                              % rounding values to higher integer (quantization)
+    gx_quantized = round(gx);                                                              % rounding values to integer (quantization)
 
 
 
@@ -199,7 +199,7 @@ function [] = quantization(aggregated_data)
 
     % Plotting compressing and decompressing function
     figure();
-    sgtitle('Optimal quantization - 10 bits');
+    sgtitle('Optimal quantization - 12 bits');
     subplot(2, 2, 1);
     plot(samples, gx_quantized);
     xlabel("Original signals values");

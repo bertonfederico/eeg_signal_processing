@@ -160,5 +160,36 @@ $$
 SQNR = 10 \cdot \log_{10}\left(\frac{P_{\text{segnale}}}{P_{\text{errore}}}\right)
 $$
 
-dove $P_{\text{segnale}}$ è la potenza del segnale quantizzato e $P_{\text{errore}}$ è la potenza dell'errore di quantizzazione. Un valore più alto di SQNR implica una minore distorsione nel segnale causata dall'errore di quantizzazione.
+dove $P_{\text{segnale}}$ è la media della potenza dei valori del segnale quantizzato, e $P_{\text{errore}}$ è la media della potenza delgli errori di quantizzazione. Un valore più alto di SQNR implica una minore distorsione nel segnale causata dall'errore di quantizzazione. In questo caso, si ottiene:
+| | Uniform quantization |
+| --- |     :---:      |
+| SQNR (dB) | 52.91 |
+
 ![alt text](images/sampling_quantization/2.png)
+
+
+
+
+### Quantizzazione non lineare: approccio ibrido
+
+Nella fase di quantizzazione dei segnali EEG, si è scelto di adottare una strategia mista che combina due approcci distinti: la quantizzazione lineare e quella non lineare (ottima). Questa decisione è stata motivata dall'analisi della distribuzione dei segnali EEG, che presenta una probabilità estremamente bassa per valori superiori a 200 µV, con conseguente rischio di errori elevati qualora si dovesse applicare una quantizzazione ottima, progettata sulla base della funzione di distribuzione cumulativa (CDF) di tali segnali. La quantizzazione ottima, infatti, tende a concentrarsi maggiormente sui valori più frequenti e, in presenza di picchi rari ma elevati, potrebbe determinare un errore significativo durante la compressione dei dati.
+
+Per ovviare a tale problematica, si è deciso di implementare una quantizzazione ibrida che sfrutta la quantizzazione lineare per i segnali con ampiezza superiore a 224 µV (i cosiddetti dati "unlikely"), e la quantizzazione non lineare ottima per quelli con ampiezza inferiore a tale soglia (i dati "likely"). In questo modo, è possibile mantenere un errore massimo di circa 8 µV per i segnali più elevati, limitando al contempo l'errore per i segnali più comuni e riducendo la complessità complessiva del sistema.
+
+Nel dettaglio, si è deciso di utilizzare una lunghezza di 12 bit totali per la quantizzazione, come nel precedente approccio lineare. Una parte di questi bit viene destinata alla quantizzazione dei valori "unlikely", garantendo che la compressione di questi segnali non superi il limite di errore prefissato. I restanti bit sono invece utilizzati per i valori "likely", per i quali è calcolata la CDF. Essa viene scalata e traslata opportunamente, lasciando sufficiente spazio nella Look-Up Table (LUT) per la rappresentazione dei dati "unlikely".
+
+Poiché i dati originali presentano una precisione con un elevato numero di cifre decimali, è stato necessario effettuare una quantizzazione preliminare per evitare l'eccessiva lunghezza della Look-Up Table. In dettaglio, la quantizzazione è stata limitata a una precisione di 5 bit frazionari, al fine di ottimizzare l'efficienza senza compromettere significativamente la rappresentazione dei dati.
+![alt text](images/sampling_quantization/3.png)
+
+Come si può intuire, questo approccio consente di ottenere una precisione costante per i valori superiori alla soglia di 124 µV, mentre per i valori inferiori la precisione diventa variabile, dipendendo direttamente dalla densità di probabilità.
+
+<div align="center">
+  <img src="images/sampling_quantization/4.png" style="width:40%;">
+</div>
+
+Confrontando i valori di SQNR ottenuti per i valori superiori e inferiori, in modulo, alla soglia di 224 µV, si ha:
+
+| | Optimal quantization |
+| --- |     :---:      |
+| SQNR for linear (dB) | 61.76 |
+| SQNR for non-linear (dB) | 40.54 |
