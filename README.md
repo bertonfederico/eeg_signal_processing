@@ -1,12 +1,12 @@
 # Digital Signal Processing per EEG
 
-L'obiettivo di questo progetto è studiare il digital signal processing applicato ai segnali EEG (elettroencefalografici), con particolare attenzione alle tecniche fondamentali per la loro analisi e trasformazione.
+L'obiettivo di questo progetto è studiare l'elaborazione numerica applicato ai segnali EEG (elettroencefalografici), con particolare attenzione alle tecniche fondamentali per la loro analisi e trasformazione.
 
-In primo luogo, viene affrontato il problema della filtrazione del segnale, con l'obiettivo di rimuovere l'interferenza di rete e altri artefatti indesiderati che possono compromettere la qualità del segnale.
+In primo luogo, viene affrontato il problema della filtraggio del segnale, con l'obiettivo di rimuovere l'interferenza di rete e altri artefatti indesiderati che possono compromettere la qualità del segnale.
 
-Successivamente, si procede con lo studio delle proprietà statistiche del segnale EEG, valutandone la stazionarietà e l'ergodicità. Poiché il segnale EEG varia nel tempo e non è generalmente stazionario o ergodico, viene utilizzata la densità spettrale di potenza (PSD) come strumento analitico, calcolata tramite lo spettrogramma. Questo approccio consente di analizzare come l'energia del segnale si distribuisca nelle diverse frequenze nel dominio temporale.
+Successivamente, si procede con lo studio delle proprietà statistiche del segnale EEG, valutandone la stazionarietà e l'ergodicità. Poiché il segnale EEG varia nel tempo e non è generalmente stazionario o ergodico, viene utilizzato lo spettrogramma per analizzare la densità spettrale di potenza (PSD). Questo approccio consente di analizzare come l'energia del segnale si distribuisca nelle diverse frequenze nel dominio temporale.
 
-Una volta caratterizzate le proprietà del segnale, si passa alla sua digitalizzazione, un passo cruciale nel DSP. Il segnale EEG viene inizialmente campionato, avendo una frequenza elevata (oversampled) di circa 5000 campioni al secondo. Infine, viene studiata la quantizzazione del segnale, che rappresenta la fase finale della digitalizzazione. Due metodi di quantizzazione vengono analizzati e confrontati: la quantizzazione uniforme, che utilizza una suddivisione equidistante del dominio dei valori del segnale, e una quantizzazione ottima, progettata per minimizzare l'errore di quantizzazione e ridurre il numero di bit necessari per la rappresentazione del segnale.
+Una volta caratterizzate le proprietà del segnale, si passa alla sua digitalizzazione. Il segnale EEG viene inizialmente campionato, avendo una frequenza elevata (oversampled) di circa 5000 campioni al secondo. Infine, viene studiata la quantizzazione del segnale, che rappresenta la fase finale della digitalizzazione. Due metodi di quantizzazione vengono analizzati e confrontati: la quantizzazione uniforme, che utilizza una suddivisione equidistante del dominio dei valori del segnale, e una quantizzazione ottima, progettata per minimizzare l'errore di quantizzazione o ridurre il numero di bit necessari per la rappresentazione del segnale.
 
 ## Filtraggio dei segnali
 
@@ -31,7 +31,7 @@ Il codice esegue il filtraggio seguendo una serie di passi:
    - Progettato con una frequenza centrale di 50 Hz per eliminare l'interferenza della rete elettrica.
    - Implementato utilizzando un'architettura diretta con coefficienti calcolati per garantire una stretta attenuazione intorno ai 50 Hz.
 
-3. **Combinazione dei Filtri**:
+3. **Combinazione dei filtri**:
    - Il segnale passa prima attraverso il filtro passa-banda FIR (per eliminare rumori generali), quindi attraverso il filtro notch IIR (per rimuovere l'interferenza specifica a 50 Hz).
 
 
@@ -67,24 +67,29 @@ Il presente paragrafo analizza le proprietà di stazionarietà in senso lato (Wi
 La stazionarietà in senso lato richiede che le statistiche di primo e secondo ordine, ovvero la media e l'autocorrelazione, siano invarianti rispetto al tempo.
 
 La stazionarietà del primo ordine è stata analizzata calcolando la media dei campioni per ogni istante temporale su tutte le realizzazioni. I risultati evidenziano che la media è approssimativamente zero, confermato dalla distribuzione di probabilità (PDF) della media calcolata che è approssimabile tramite una gaussiana centrata nello zero.
+
 ![alt text](images/spectral_estimation/0.png)
 
 L'analisi della funzione di autocorrelazione, invece, ha mostrato che essa varia significativamente tra campioni selezionati casualmente nel tempo. In altre parole, l'autocorrelazione non dipende esclusivamente dal lag temporale $\tau$, ma risulta anche funzione dell'istante temporale $t$. Questa non uniformità è attribuibile alla natura dinamica dei segnali EEG, influenzati da attività cerebrale transitoria e variabile, come onde alfa, beta, delta e theta.
+
 ![alt text](images/spectral_estimation/1.png)
 
 ### Ergodicità
 Poiché i segnali EEG si sono dimostrati non stazionari di secondo ordine, ciò suggerisce che anche l'ergodicità non sia verificata. 
 
 L'ergodicità di prim'ordine implica che le medie temporali calcolate su una singola realizzazione siano equivalenti alle medie statistiche calcolate su più realizzazioni. Confrontando la media temporale calcolata su una singola realizzazione con la media statistica complessiva, si osserva una forte concordanza.
+
 ![alt text](images/spectral_estimation/2.png)
 
 Per quanto concerne il secondo ordine, la funzione di autocorrelazione temporale calcolata su una singola realizzazione è risultata significativamente diversa dall'autocorrelazione statistica globale. Questo comportamento è coerente con la non stazionarietà dei segnali EEG. In particolare, la non ergodicità dell'autocorrelazione è attribuibile alla variabilità intrinseca dei segnali EEG; durante eventi epilettici, ad esempio, si osservano pattern di scariche neurali che introducono specifiche caratteristiche di autocorrelazione, differenti da quelle riscontrabili in stati cerebrali normali. Di seguito viene riportato il differente andamento dell'autocorrelazione nel caso di segnali EEG epilettici e non epilettici:
+
 ![alt text](images/spectral_estimation/3.png)
 
 
 ## Densità spettrale di potenza
 
 Come evidenziato, su intervalli temporali prolungati (ad esempio, 30 secondi), il segnale EEG non può essere considerato né stazionario né ergodico. Questa caratteristica intrinseca influenza significativamente l'analisi della densità spettrale di potenza, rendendo necessario esaminare il segnale su finestre temporali sufficientemente ridotte per cogliere eventuali anomalie, come quelle tipiche dell'epilessia. In questo contesto, l'utilizzo dello spettrogramma rappresenta una soluzione ideale, consentendo di visualizzare la distribuzione temporale e frequenziale della potenza e di monitorare le variazioni dinamiche nel contenuto spettrale del segnale.
+
 ![alt text](images/spectral_estimation/4.png)
 
 L'analisi della densità spettrale di potenza è uno strumento fondamentale per caratterizzare il contenuto frequenziale di un segnale. Nei segnali non stazionari, come quelli EEG, la scelta del tempo di stazionarietà $T_{\text{staz}}$ è cruciale per bilanciare risoluzione temporale e frequenziale.
@@ -119,6 +124,7 @@ Nel contesto dei segnali EEG analizzati, $T_{\text{staz}} = 1$ secondo si è riv
 - Finestre di 0.5 secondi risultano troppo brevi, con una risoluzione frequenziale insufficiente per distinguere bande EEG (ad esempio alfa, beta, delta).
 - Finestre di 5 o 10 secondi forniscono una risoluzione frequenziale elevata, ma non riescono a catturare variazioni rapide come quelle che si verificano durante eventi epilettici o transitori.
 - Con $T_{\text{staz}} = 1$ secondo, si ottiene un bilanciamento precisione e risoluzione.
+
 ![alt text](images/spectral_estimation/5.png)
 
 
@@ -129,12 +135,14 @@ $$
 f_s \geq 2 f_{\text{max}}
 $$
 
-Le frequenze tipiche nell'EEG variano da 0,5-4 Hz (onde delta) a 30-100 Hz (onde gamma), con frequenze intermedie come 4-8 Hz (onde theta), 8-13 Hz (onde alfa) e 13-30 Hz (onde beta). Poiché la componente più alta di frequenza del segnale EEG solitamente non supera i 250 Hz, campionare a 500 Hz è sufficiente per catturare tutte le informazioni rilevanti, rispettando il principio di Nyquist.
+Le frequenze tipiche nell'EEG variano da 0.5-4 Hz (onde delta) a 30-100 Hz (onde gamma), con frequenze intermedie come 4-8 Hz (onde theta), 8-13 Hz (onde alfa) e 13-30 Hz (onde beta). Poiché la componente più alta di frequenza del segnale EEG solitamente non supera i 250 Hz, campionare a 500 Hz è sufficiente per catturare tutte le informazioni rilevanti, rispettando il principio di Nyquist.
+
 ![alt text](images/sampling_quantization/0.png)
 
 
 ## Quantizzazione
 Nell'ambito dell'analisi del segnale EEG, dopo aver esaminato i grafici della Funzione di Densità di Probabilità (PDF) e della Funzione di Distribuzione Cumulativa (CDF), si osserva che la PDF del dataset in esame presenta una forma prossima alla distribuzione gaussiana, centrata intorno allo zero. Questo andamento riflette la natura prevalentemente simmetrica e a bassa ampiezza dei segnali EEG, ma è interessante notare che la distribuzione si estende fino a 1000 µV, includendo anche le oscillazioni più intense associate a fenomeni come l'epilessia. Tali caratteristiche del segnale devono essere prese in considerazione nel processo di quantizzazione, al fine di preservare l'integrità del dato e ridurre al contempo la quantità di bit necessari per rappresentarlo.
+
 ![alt text](images/sampling_quantization/1.png)
 
 Il processo di quantizzazione è stato inizialmente eseguito in maniera uniforme, applicando una divisione regolare dell'intervallo di valori del segnale in un numero predefinito di livelli discreti.
@@ -179,6 +187,7 @@ Per ovviare a tale problematica, si è deciso di implementare una quantizzazione
 Nel dettaglio, si è deciso di utilizzare una lunghezza di 12 bit totali per la quantizzazione, come nel precedente approccio lineare. Una parte di questi bit viene destinata alla quantizzazione dei valori "unlikely", garantendo che la compressione di questi segnali non superi il limite di errore prefissato. I restanti bit sono invece utilizzati per i valori "likely", per i quali è calcolata la CDF. Essa viene scalata e traslata opportunamente, lasciando sufficiente spazio nella Look-Up Table (LUT) per la rappresentazione dei dati "unlikely".
 
 Poiché i dati originali presentano una precisione con un elevato numero di cifre decimali, è stato necessario effettuare una quantizzazione preliminare per evitare l'eccessiva lunghezza della Look-Up Table. In dettaglio, la quantizzazione è stata limitata a una precisione di 5 bit frazionari, al fine di ottimizzare l'efficienza senza compromettere significativamente la rappresentazione dei dati.
+
 ![alt text](images/sampling_quantization/3.png)
 
 Come si può intuire, questo approccio consente di ottenere una precisione costante per i valori superiori alla soglia di 124 µV, mentre per i valori inferiori la precisione diventa variabile, dipendendo direttamente dalla densità di probabilità.
