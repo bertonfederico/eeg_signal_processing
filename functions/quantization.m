@@ -99,8 +99,8 @@ function [] = quantization(aggregated_data)
     R = 2 * abs(mfp_target);                                            % length of representable interval
     DR_db = 20 * log10(R / Nfp_target);                                 % dynamic range
     fprintf('Dynamic range in dB: %.2f\n', DR_db);
-    sign_power = mean(compressed_aggregated_data .^ 2) + (mean(compressed_aggregated_data) .^ 2);
-    error_power = mean(OUTERR .^ 2) + (mean(OUTERR) .^ 2);
+    sign_power = mean(compressed_aggregated_data .^ 2);
+    error_power = mean(OUTERR .^ 2);
     SQNRestim = 10*log10(sign_power / error_power);
     fprintf('SQNR estimation for linear: %.2f\n', SQNRestim);
 
@@ -238,8 +238,8 @@ function [] = quantization(aggregated_data)
     ylabel("Probability");
     
     % Showing SQNRestim
-    sign_power = mean(decompressed_data .^ 2) + (mean(decompressed_data) .^ 2);
-    error_power = mean(abs(bef_afte_diff) .^ 2) + (mean(abs(bef_afte_diff)) .^ 2);
+    sign_power = mean(decompressed_data .^ 2);
+    error_power = mean(abs(bef_afte_diff) .^ 2);
     SQNRestim_optimal = 10*log10(sign_power / error_power);
     fprintf('SQNR estimation for non-linear: %.2f\n', SQNRestim_optimal);
 

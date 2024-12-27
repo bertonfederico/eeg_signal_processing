@@ -157,10 +157,14 @@ Once uniform 12-bit quantization has been performed, it is critical to evaluate 
 Dynamic range is an indicator of the system's ability to represent signal amplitude. It expresses the ratio between the length of the representable range and the resolution of the system, that is, the fractional pitch. In our case, the representable range is determined by the variability of the values between the minimum and maximum representable (`mfp_target` and `Mfp_target`), and the resolution is defined by the fractional step (`Nfp_target`). The formula for calculating the dynamic range in decibels is as follows:
 
 $$
-DR_{\text{db}} = 20 \cdot \log_{10}\left(\frac{R}{Nfp_{\text{target}}}\right)
+DR_{\text{db}} = 20 \cdot \log_{10}\left(\frac{R}{Nfp_{\text{target}}}\right) \approx 6 \cdot B
 $$
 
-where $R = 2 \cdot |mfp_{\text{target}}|$ represents the length of the representable interval, and $Nfp_{\text{target}}$ is the fractional resolution.
+where $R = 2 \cdot |Mfp_{\text{target}}|$ represents the length of the representable interval, $Nfp_{\text{target}}$ is the fractional resolution, and B is the  number of available bits.
+
+| Dynamic range (dB) |
+|     :---:      |
+| 72.25 |
 
 Another important parameter is the quantization signal-to-noise ratio (SQNR). This indicator measures how effectively the system quantizes the signal by comparing the power of the quantized signal with the power of the error introduced by the quantization. The value of the SQNR is given by the formula:
 
@@ -168,7 +172,7 @@ $$
 SQNR = 10 \cdot \log_{10}\left(\frac{P_{\text{segnale}}}{P_{\text{errore}}}\right)
 $$
 
-where $P_{\text{signal}}$ is the average power of the quantized signal values, and $P_{\text{error}}$ is the average power of the quantization errors. A higher value of SQNR implies less distortion in the signal caused by the quantization error. In this case, it is obtained:
+where $P_{\text{signal}}$ is the average power of the quantized signal values, and $P_{\text{error}}$ is the average power of the quantization errors. A higher value of SQNR implies less distortion in the signal caused by the quantization error. SQNR can reach the value of dynamic range in the case where the probability density of the signal to be quantized can be approximated as uniform. In the case of this signal this is not valid, and thus we have this value:
 | | Uniform quantization |
 | --- |     :---:      |
 | SQNR (dB) | 52.91 |
@@ -200,5 +204,5 @@ Comparing the SQNR values obtained for values above and below, in modulus, the 2
 
 | | Optimal quantization |
 | --- |     :---:      |
-| SQNR for linear (dB) | 61.76 |
+| SQNR for linear (dB) | 62.89 |
 | SQNR for non-linear (dB) | 40.54 |
