@@ -15,12 +15,12 @@ function [] = quantization(aggregated_data)
     B_frac_target = 1;                                       % bits for fractionary part
     B_sign = 1;                                              % bits for sign
     Nfp_target = 2^(-B_frac_target);                         % range between representable numbers
-    Mfp_target = Nfp_target * (2^(B_target - B_sign) - 1);   % max number representable: 1 removed for sign, 1 removed for zero
+    Mfp_target = Nfp_target * (2^(B_target - 1) - 1);        % max number representable
     mfp_target = -(Nfp_target + Mfp_target);                 % min number representable
     B_int_target = B_target - B_sign;                        % bits for integer
-    R = 2 * abs(mfp_target);                                            % length of representable interval
-    DR_db = 20 * log10(R / Nfp_target);                                 % dynamic range
-    fprintf('Dynamic range in dB: %.2f\n', DR_db);
+    R = abs(mfp_target) + Mfp_target;                        % length of representable interval
+    DR_db = 20 * log10(R / Nfp_target);                      % dynamic range (also representable with 6*B_target)
+    fprintf('\n\n  -> Dynamic range in dB: %.2f\n', DR_db);
 
 
 
@@ -78,7 +78,7 @@ function [] = quantization(aggregated_data)
     %% Showing signal PDF and error PDF
 
     figure()
-    sgtitle('Linear quantization - 12 bits');
+    sgtitle('Uniform quantization - 12 bits');
     subplot(1, 2, 1);
     pdf_estim(aggregated_data, 401, 1);
     title("Signal PDF");
@@ -99,7 +99,7 @@ function [] = quantization(aggregated_data)
     sign_power = mean(compressed_aggregated_data .^ 2);
     error_power = mean(OUTERR .^ 2);
     SQNRestim = 10*log10(sign_power / error_power);
-    fprintf('SQNR estimation for linear: %.2f\n', SQNRestim);
+    fprintf('  -> SQNR estimation for uniform: %.2f\n', SQNRestim);
 
 
 
@@ -115,7 +115,7 @@ function [] = quantization(aggregated_data)
     %%%%%%%%%%%%%%%%%%%%%%%% OPTIMAL QUANTIZATION - 12 bit %%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Since probability for values over 100 µV is very low, quantization is splittend in linear for higher data, optimal for lower data
+    % Since probability for values over 100 µV is very low, quantization is splittend in uniform for higher data, optimal for lower data
     fprintf('\n\nOptimal quantization\n');
 
 
@@ -146,7 +146,7 @@ function [] = quantization(aggregated_data)
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %% Managing unlikely data with linear quantization
+    %% Managing unlikely data with uniform quantization
     error_range = 2^4;                                                                             % compression range length
     necessary_ranges_semi_num = floor((max_value - positive_separator_value) / error_range);       % necessary n. of ranges for unlikely positive data
     LUT_min_positive_limit = 2^(B_int_target) - 1 - necessary_ranges_semi_num;                     % min limit for positive target
@@ -209,7 +209,7 @@ function [] = quantization(aggregated_data)
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %% Testing compression and decompression for non-linear quantization
+    %% Testing compression and decompression for non-uniform quantization
 
     testing_data = aggregated_data(aggregated_data > -123 & aggregated_data < 123);
     [testing_data_lut, ~, ~, ~, ~, ~] = FpQuantize(testing_data, -B_starting, B_frac_starting, 'round');
@@ -219,13 +219,13 @@ function [] = quantization(aggregated_data)
     % Showing signal PDF and error PDF
     subplot(2, 2, 2);
     pdf_estim(compressed_data, 51, 1);
-    title("Compressed signal PDF - non-linear quantization");
+    title("Compressed signal PDF - non-uniform quantization");
     xlabel("Compressed signal amplitude");
     ylabel("Probability");
     subplot(2, 2, 4);
     bef_afte_diff = testing_data - decompressed_data;
     pdf_estim(bef_afte_diff, 21, 1);
-    title("Error PDF - non-linear quantization");
+    title("Error PDF - non-uniform quantization");
     xlabel("Error amplitude");
     ylabel("Probability");
     
@@ -233,13 +233,13 @@ function [] = quantization(aggregated_data)
     sign_power = mean(decompressed_data .^ 2);
     error_power = mean(abs(bef_afte_diff) .^ 2);
     SQNRestim_optimal = 10*log10(sign_power / error_power);
-    fprintf('SQNR estimation for non-linear: %.2f\n', SQNRestim_optimal);
+    fprintf('  -> SQNR estimation for non-uniform: %.2f\n', SQNRestim_optimal);
 
 
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %% Testing compression and decompression for linear quantization
+    %% Testing compression and decompression for uniform quantization
 
     testing_data = aggregated_data(aggregated_data <= -123 | aggregated_data > 123);
     [testing_data_lut, ~, ~, ~, ~, ~] = FpQuantize(testing_data, -B_starting, B_frac_starting, 'round');
@@ -251,7 +251,7 @@ function [] = quantization(aggregated_data)
     bef_afte_diff = testing_data - decompressed_data;
     error_power = mean(abs(bef_afte_diff) .^ 2) + (mean(abs(bef_afte_diff)) .^ 2);
     SQNRestim_optimal = 10*log10(sign_power / error_power);
-    fprintf('SQNR estimation for linear: %.2f\n', SQNRestim_optimal);
+    fprintf('  -> SQNR estimation for uniform: %.2f\n', SQNRestim_optimal);
     
 
 end
