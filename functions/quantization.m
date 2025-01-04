@@ -6,10 +6,21 @@ function [] = quantization(aggregated_data)
     % Usual EEG range --> [-100 µV, 100 µV]
     %       With 0 fractionary bits  -->   2^(n−1)−1 ≥ 100     -->  n >= 8
     %       With 1 fractionary bit   -->                            n >= 9
-    % Epilepsy EEG range --> [-1000 µV, 1000 µV]
-    %       With 0 fractionary bits  -->   2^(n−1)−1 ≥ 1500    -->  n >= 12
-    %       With 1 fractionary bit   -->                            n >= 13
-    % This dataset range --> [-1000 µV, 1000 µV]
+    % Epilepsy EEG range (this dataset range) --> [-1000 µV, 1000 µV]
+    %       With 0 fractionary bits  -->   2^(n−1)−1 ≥ 1000    -->  n >= 11
+    %       With 1 fractionary bit   -->                            n >= 12
+
+    %% Target bits values
+    B_target = 12;                                           % total number of bits avaiable
+    B_frac_target = 1;                                       % bits for fractionary part
+    B_sign = 1;                                              % bits for sign
+    Nfp_target = 2^(-B_frac_target);                         % range between representable numbers
+    Mfp_target = Nfp_target * (2^(B_target - B_sign) - 1);   % max number representable: 1 removed for sign, 1 removed for zero
+    mfp_target = -(Nfp_target + Mfp_target);                 % min number representable
+    B_int_target = B_target - B_sign;                        % bits for integer
+    R = 2 * abs(mfp_target);                                            % length of representable interval
+    DR_db = 20 * log10(R / Nfp_target);                                 % dynamic range
+    fprintf('Dynamic range in dB: %.2f\n', DR_db);
 
 
 
@@ -53,17 +64,6 @@ function [] = quantization(aggregated_data)
     fprintf('\n\nUniform quantization\n');
 
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %% Target bits values
-
-    B_target = 12;                                           % total number of bits avaiable
-    B_frac_target = 1;                                       % bits for fractionary part
-    Nfp_target = 2^(-B_frac_target);                         % range between representable numbers
-    Mfp_target = Nfp_target * (2^(B_target - 1) - 1);        % max number representable: 1 removed for sign, 1 removed for zero
-    mfp_target = -(Nfp_target + Mfp_target);                 % min number representable
-
-
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -96,9 +96,6 @@ function [] = quantization(aggregated_data)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% Showing comparison between SQNRestim and DR_db
 
-    R = 2 * abs(mfp_target);                                            % length of representable interval
-    DR_db = 20 * log10(R / Nfp_target);                                 % dynamic range
-    fprintf('Dynamic range in dB: %.2f\n', DR_db);
     sign_power = mean(compressed_aggregated_data .^ 2);
     error_power = mean(OUTERR .^ 2);
     SQNRestim = 10*log10(sign_power / error_power);
@@ -125,11 +122,6 @@ function [] = quantization(aggregated_data)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% Target and LUT avaiable bits
-
-    % Target bits
-    B_target = 12;                                                  % total number of bits avaiables
-    B_sign = 1;                                                     % bits for sign
-    B_int_target = B_target - B_sign;                               % bits for integer
 
     % LUT bits
     B_starting = 16;                                                % total number of bits
