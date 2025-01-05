@@ -10,7 +10,7 @@ addpath("functions\")
 % ****************************** Filtering ********************************
 % *************************************************************************
 %% Example for both passband and notch filters required
-EEG_dataset_test_1 = readmatrix("eeg_dataset\filtering\passband_notch\subj_1.csv");
+EEG_dataset_test_1 = readmatrix("eeg_dataset\filter\subj_1.csv");
 fs = 512;
 notch_R = 0.60;
 digital_filter(EEG_dataset_test_1', fs, notch_R, 1);
