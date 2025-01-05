@@ -74,8 +74,8 @@ Despite its high selectivity, the IIR filter has a significant defect: the non-c
 
 This section analyzes the properties of Wide-Sense Stationarity (WSS) and ergodicity of EEG signals, considering a dataset consisting of realizations of 30-second duration. The dataset is structured as a matrix of size $1076 \times 150000$, where each row represents a realization and each column a time sample.
 
-### Stationarity in the broad sense (WSS).
-Stationarity in the broad sense requires first- and second-order statistics, i.e., mean and autocorrelation, to be invariant with respect to time.
+### Wide-sense Stationarity (WSS).
+Wide-sense stationarity requires first- and second-order statistics, i.e., mean and autocorrelation, to be invariant with respect to time.
 
 First-order stationarity was analyzed by averaging the samples for each time instant over all realizations. The results show that the mean is approximately zero, confirmed by the probability distribution (PDF) of the calculated mean, which can be approximated by a zero-centered Gaussian.
 
