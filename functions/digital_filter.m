@@ -23,13 +23,16 @@ function [total_filtered] = digital_filter(EEG_data, fc, notch_R)
     % FIR filter with linear convolution
     M = length(EEG_data);
     L = length(fir_filter);
+    bandpass_filtered_eeg_0 = conv(EEG_data, fir_filter);
+
+    % FIR filter with padding and linear convolution
     EEG_data_padded = [EEG_data(end-L+1:end), EEG_data];
     bandpass_filtered_padded_eeg = conv(EEG_data_padded, fir_filter);
-    bandpass_filtered_eeg = bandpass_filtered_padded_eeg(L+1:L+M);
+    bandpass_filtered_eeg_1 = bandpass_filtered_padded_eeg(L+1:L+M);
 
-    % Corresponding FIR filter with circular convolution & FFT
+    % FIR filter with circular convolution & FFT
     filter_padded = [fir_filter zeros(1, M - length(fir_filter))];
-    bandpass_filtered_eeg = ifft(fft(filter_padded).*fft(EEG_data));
+    bandpass_filtered_eeg_2 = ifft(fft(filter_padded).*fft(EEG_data));
     Nfft = 1000;
     [freq_resp_fir, freq_fir] = freqz(fir_filter, 1, Nfft, fc);
 
@@ -71,12 +74,39 @@ function [total_filtered] = digital_filter(EEG_data, fc, notch_R)
     % *************************************************************************
     % ************************ Bandpass + notch filter ************************
     % *************************************************************************
-    total_filtered = filter(b_notch, a_notch, bandpass_filtered_eeg);
+    total_filtered = filter(b_notch, a_notch, bandpass_filtered_eeg_2);
     
 
 
 
 
+    % *************************************************************************
+    % ***************************** FIR comparison ****************************
+    % *************************************************************************
+    figure;
+    sgtitle('FIR convolutions comparison')
+    subplot(3, 1, 1);
+    plot(time(1:5000), bandpass_filtered_eeg_0(1:5000));
+    title('FIR with linear convolution');
+    xlabel('Time (s)');
+    ylabel('Amplitude (µV)');
+
+    subplot(3, 1, 2);
+    plot(time(1:5000), bandpass_filtered_eeg_1(1:5000));
+    title('FIR with padding and linear convolution');
+    xlabel('Time (s)');
+    ylabel('Amplitude (µV)');
+
+    subplot(3, 1, 3);
+    plot(time(1:5000), bandpass_filtered_eeg_2(1:5000));
+    title('FIR with circular convolution');
+    xlabel('Time (s)');
+    ylabel('Amplitude (µV)');
+
+    
+    
+    
+    
     % *************************************************************************
     % ***************************** Signal graphs *****************************
     % *************************************************************************
@@ -88,7 +118,7 @@ function [total_filtered] = digital_filter(EEG_data, fc, notch_R)
     ylabel('Amplitude (µV)');
 
     subplot(2, 2, 2);
-    plot(time, bandpass_filtered_eeg);
+    plot(time, bandpass_filtered_eeg_2);
     title('Bandpass filtered signal');
     xlabel('Time (s)');
     ylabel('Amplitude (µV)');
@@ -137,7 +167,7 @@ function [total_filtered] = digital_filter(EEG_data, fc, notch_R)
     ylim([-1000 1000]);
 
     subplot(2, 2, 4);
-    plot(time, bandpass_filtered_eeg);
+    plot(time, bandpass_filtered_eeg_2);
     title('Bandpass filtered signal');
     xlabel('Time (s)');
     ylabel('Amplitude (µV)');
@@ -220,7 +250,7 @@ function [total_filtered] = digital_filter(EEG_data, fc, notch_R)
     pdf_estim(EEG_data', Nint, 1);
     title('Probability density with artifact');
     subplot(2, 2, 2);
-    pdf_estim(bandpass_filtered_eeg', Nint, 1);
+    pdf_estim(bandpass_filtered_eeg_2', Nint, 1);
     title('Probability density - bandpass filter');
     subplot(2, 2, 3);
     pdf_estim(notch_filtered_eeg', Nint, 1);
@@ -247,7 +277,7 @@ function [total_filtered] = digital_filter(EEG_data, fc, notch_R)
     ylabel('Magnitudine');
 
     subplot(2, 2, 2);
-    [S, F, ~] = spectrogram(bandpass_filtered_eeg, n_cb, 0, n_fft, fc);
+    [S, F, ~] = spectrogram(bandpass_filtered_eeg_2, n_cb, 0, n_fft, fc);
     plot(F, 20*log10(mean(abs(S'))), 'r');
     title('Filtered spectrogram - bandpass');
     xlabel('Frequency');

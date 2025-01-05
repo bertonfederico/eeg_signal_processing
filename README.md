@@ -21,39 +21,53 @@ By combining these two approaches, the code ensures a clean signal: the FIR band
 ![alt text](images/filter/0.png)
 ![alt text](images/filter/4.png)
 
-The code performs filtering by following a series of steps:
-
-1. **FIR bandpass filter**:
-   - Designed using a Kaiser window, which offers a good compromise between selectivity and attenuation.
-   - The filter is applied using two methods: `filter` and `filtfilt`.
-
-2. **Notch IIR Filter**:
-   - Designed with a center frequency of 50 Hz to eliminate mains interference.
-   - Implemented using a direct architecture with coefficients calculated to ensure tight attenuation around 50 Hz.
-
-Group delay represents the time required for a given signal frequency to pass through a filter system. It differs between FIR and IIR filters:
-
-- **Kaiser filter with constant group delay**: FIR filters introduce a constant group delay over all frequencies.
-
-- **Notch filter with non-constant group delay**: with IIR filters, the delay varies with frequency, being more pronounced in the vicinity of the notch center frequency (50 Hz in this case).
-
-![alt text](images/filter/2.png)
-
-
-In order to compensate for the group delay in the Kiaser filter, `filtfilt` can be used. The choice between `filter` and `filtfilt` depends on the needs of the application:
-
-- **`filter`**:
-  - It proceeds in one direction only (from the first to the last sample).
-  - It introduces a group delay due to the convolution caused by the filter. For a FIR filter, this delay corresponds to half the length of the filter.
-  - It is computationally simpler and suitable for real-time applications.
-
-- **`filtfilt`**:
-  - It applies the filter twice (in the temporal and anti-temporal direction).
-  - It eliminates the group delay, making the resulting signal temporally aligned with the original signal.
-  - It requires the complete signal, so it is not suitable for real-time processing.
+### FIR filter through Kaiser
+The FIR filter designed through Kaiser's window was used to preserve only EEG signal frequencies between 0.5 and 45 Hz. This range is critical for electroencephalographic analysis, as it allows preservation of useful signal components while eliminating undesirable ones, such as high-frequency noise and mains interference.
+The behavior of the FIR filter is analyzed in both time and frequency domains. Below, the result of filtering applied to the raw data is reported:
 
 ![alt text](images/filter/1.png)
 
+Filtering can be implemented using two main approaches:
+1.	Linear convolution: this approach generates an aliasing-free result, but introduces a group delay equal to:
+
+$$
+\tau_g = \frac{N-1}{2}
+$$
+
+where N is the length of the filter.
+
+2.	Circular convolution: this method is computationally efficient but can introduce circular aliasing if appropriate precautions are not applied. By using appropriate padding, circular convolution becomes equivalent to linear convolution.
+
+The following figure shows the results obtained through the two filtering approaches, highlighting the difference between linear and circular convolution from the point of view of the initial delay of the filtered signal:
+
+![alt text](images/filter/5.png)
+
+Circular convolution can be implemented in MATLAB through two different methodologies:
+1.	Adding a padding equal in length to the filter: extending the original signal by adding to its beginning a sequence of its end samples equal in length to the length of the filter.
+
+$$
+x_{\text{padded}} = [x[M-L+1 : L], \, x]
+$$
+
+with M equal to the length of the signal, and L equal to the length of the filter. Next, linear convolution is performed on the extended signal through the created filter, and the first L and last L-1 samples are removed from it.
+2.	Using the discrete Fourier transform (DFT): convolution is performed in the frequency domain, taking advantage of the properties of the discrete Fourier transform:
+
+$$
+y[n] = \text{IDFT}\big[\text{DFT}[x] \cdot \text{DFT}[h]\big]
+$$
+
+### Notch-type IIR filter
+For the removal of electrical interference concentrated in a very narrow frequency range, such as 50 Hz due to network interference, a Notch-type IIR filter was used. This type of filter is ideal for selectively attenuating a very narrow frequency range due to its high transition slope.
+The Notch filter was designed by placing:
+-	Zeros on the unit circle, at frequencies corresponding to ±50 Hz, to completely cancel the signal in this band.
+-	Poles at a distance from the center of the unit circle equal to r=0.8, to ensure filter stability and control the width of the attenuation band.
+
+![alt text](images/filter/3.png)
+
+Despite its high selectivity, the IIR filter has a significant defect: the non-constant group delay. In particular, near 50 Hz, the group delay reaches high values due to the presence of the poles and zeros near the notch frequency. Despite having a non-constant group delay, IIR has a significant advantage over the FIR filter: the overall delay is much smaller.
+
+
+![alt text](images/filter/2.png)
 
 ## Stationarity and ergodicity
 
