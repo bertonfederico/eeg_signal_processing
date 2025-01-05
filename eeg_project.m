@@ -13,7 +13,7 @@ addpath("functions\")
 EEG_dataset_test_1 = readmatrix("eeg_dataset\filter\subj_1.csv");
 fs = 512;
 notch_R = 0.60;
-digital_filter(EEG_dataset_test_1', fs, notch_R, 1);
+digital_filter(EEG_dataset_test_1', fs, notch_R);
 pause
 
 
