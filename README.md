@@ -124,7 +124,7 @@ $$
 $$
 
 Therefore:
-- Short windows ($T_{text{staz}}$ small): good temporal resolution, but limited frequency resolution.
+- Short windows ($T_{\text{staz}}$ small): good temporal resolution, but limited frequency resolution.
 - Long windows ($T_{\text{staz}}$ large): high frequency resolution, but poor temporal resolution.
 
 A suitable compromise is needed to capture both the temporal evolution of the signal and its frequency content.
