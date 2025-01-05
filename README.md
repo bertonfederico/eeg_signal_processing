@@ -43,13 +43,14 @@ The following figure shows the results obtained through the two filtering approa
 ![alt text](images/filter/5.png)
 
 Circular convolution can be implemented in MATLAB through two different methodologies:
-1.	Adding a padding equal in length to the filter: extending the original signal by adding to its beginning a sequence of its end samples equal in length to the length of the filter.
+1. Adding a padding equal in length to the filter: extending the original signal by adding to its beginning a sequence of its end samples equal in length to the length of the filter.
 
 $$
 x_{\text{padded}} = [x[M-L+1 : L], \, x]
 $$
 
-with M equal to the length of the signal, and L equal to the length of the filter. Next, linear convolution is performed on the extended signal through the created filter, and the first L and last L-1 samples are removed from it.
+   with M equal to the length of the signal, and L equal to the length of the filter. Next, linear convolution is performed on the extended signal through the created filter, and the first L and last L-1 samples are removed from it.
+
 2.	Using the discrete Fourier transform (DFT): convolution is performed in the frequency domain, taking advantage of the properties of the discrete Fourier transform:
 
 $$
