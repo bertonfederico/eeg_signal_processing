@@ -46,7 +46,7 @@ Circular convolution can be implemented in MATLAB through two different methodol
 1. Adding a padding equal in length to the filter: extending the original signal by adding to its beginning a sequence of its end samples equal in length to the length of the filter.
 
 $$
-x_{\text{padded}} = [x[M-L+1 : L], \, x]
+x_{\text{padded}} = [x[M-L+1 : L], x]
 $$
 
    with M equal to the length of the signal, and L equal to the length of the filter. Next, linear convolution is performed on the extended signal through the created filter, and the first L and last L-1 samples are removed from it.
