@@ -115,7 +115,7 @@ $$
 
 where $X(f)$ is the Fourier transform of the signal $x(t)$ in a time window of duration $T$.
 
-The choice of $T_{text{staz}}$ represents a compromise between:
+The choice of $T_{\text{staz}}$ represents a compromise between:
 1. **Temporal resolution**: a shorter time window allows rapid changes in time to be detected, improving temporal accuracy.
 2. **Frequency resolution**: a longer time window allows for greater frequency accuracy, since frequency resolution is inversely proportional to window length:
 
