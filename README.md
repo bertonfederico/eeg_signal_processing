@@ -6,7 +6,7 @@ First, the problem of signal filtering is addressed, with the aim of removing ne
 
 Next, the statistical properties of the EEG signal are studied, evaluating its stationarity and ergodicity. Since the EEG signal varies over time and is generally not stationary or ergodic, the spectrogram is used to analyze the power spectral density (PSD). This approach makes it possible to analyze how the signal energy is distributed across the different frequencies in the time domain.
 
-Once the properties of the signal have been characterized, it is then digitized. The EEG signal is initially sampled, having a high (oversampled) frequency of about 5,000 samples per second. Finally, the quantization of the signal is studied, which is the final stage of digitization. Two quantization methods are analyzed and compared: uniform quantization, which uses an equidistant subdivision of the domain of signal values, and optimal quantization, which is designed to minimize the quantization error or reduce the number of bits required to represent the signal.
+Once the properties of the signal have been characterized, it is then digitized. The EEG signal is initially sampled, having a extremely high (oversampled) frequency of about 5,000 samples per second. Finally, the quantization of the signal is studied, which is the final stage of digitization. Two quantization methods are analyzed and compared: uniform quantization, which uses an equidistant subdivision of the domain of signal values, and optimal quantization, which is designed to minimize the quantization error or reduce the number of bits required to represent the signal.
 
 ## Signal filtering
 
